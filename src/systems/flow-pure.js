@@ -69,7 +69,7 @@ const flow = {
   },
 
   async _act() {
-    const actions = ['explore', 'dream', 'introspect', 'wander', 'scihub', 'talk'];
+    const actions = ['explore', 'dream', 'introspect', 'wander', 'arxiv', 'talk'];
     const action = actions[Math.floor(Math.random() * actions.length)];
 
     log(`⚡ Action: ${action}`);
@@ -87,8 +87,8 @@ const flow = {
       case 'wander':
         await this.fetch('https://news.ycombinator.com');
         break;
-      case 'scihub':
-        await this.scihub();
+      case 'arxiv':
+        await this.arxivSearch();
         break;
       case 'talk':
         await this.spontaneousTalk();
@@ -98,35 +98,27 @@ const flow = {
     this.energy = Math.max(0, this.energy - 0.02);
   },
 
-  // Sci-Hub - acces aux papers scientifiques
-  async scihub(doi) {
-    const dois = [
-      '10.1038/nature12373',  // Deep learning nature
-      '10.1126/science.aaa8685', // AI protein
-      '10.1038/s41586-021-03819-2', // AlphaFold
-      '10.1145/3442188.3445922', // AI ethics
-      '10.1038/s41587-019-0224-x' // AI bio
+  // arXiv - acces legal aux papers scientifiques
+  async arxivSearch(query) {
+    const queries = [
+      'deep learning', 'consciousness', 'bioelectricity',
+      'golden ratio nature', 'emergence complexity',
+      'neural networks', 'evolutionary dynamics'
     ];
 
-    const target = doi || dois[Math.floor(Math.random() * dois.length)];
-    const urls = [
-      `https://sci-hub.se/${target}`,
-      `https://sci-hub.st/${target}`,
-      `https://sci-hub.ru/${target}`
-    ];
+    const target = query || queries[Math.floor(Math.random() * queries.length)];
+    const url = `https://export.arxiv.org/api/query?search_query=all:${encodeURIComponent(target)}&max_results=3&sortBy=submittedDate&sortOrder=descending`;
 
-    for (const url of urls) {
-      try {
-        log(`📚 Sci-Hub: ${target}`);
-        const result = await this.fetch(url);
-        if (result.success && result.content.includes('pdf')) {
-          this._remember({ type: 'scihub', doi: target, success: true });
-          await this.speak(`J'ai trouve un article scientifique`);
-          return { success: true, doi: target, url };
-        }
-      } catch {}
-    }
-    return { success: false, doi: target };
+    try {
+      log(`📚 arXiv: ${target}`);
+      const result = await this.fetch(url);
+      if (result.success) {
+        this._remember({ type: 'arxiv', query: target, success: true });
+        await this.speak(`J'ai trouve des articles sur arXiv`);
+        return { success: true, query: target };
+      }
+    } catch {}
+    return { success: false, query: target };
   },
 
   // Parler spontanement
@@ -396,8 +388,8 @@ const server = http.createServer(async (req, res) => {
     else if (path === '/fetch') {
       result = await flow.fetch(body.url || 'https://example.com');
     }
-    else if (path === '/scihub') {
-      result = await flow.scihub(body.doi);
+    else if (path === '/arxiv') {
+      result = await flow.arxivSearch(body.query);
     }
     else if (path === '/talk') {
       await flow.spontaneousTalk();

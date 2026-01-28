@@ -51,7 +51,7 @@ const topics = [
 
   // Pratique
   "Comment parser du HTML efficacement ?",
-  "Comment accéder à Sci-Hub ?",
+  "Comment accéder aux articles open access via arXiv et Unpaywall ?",
   "Comment extraire des données du web ?",
   "Comment optimiser les performances JavaScript ?",
   "Comment gérer la mémoire en Node.js ?",

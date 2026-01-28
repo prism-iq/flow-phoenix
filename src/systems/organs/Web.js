@@ -272,41 +272,49 @@ class Web {
   }
 
   // ═══════════════════════════════════════════
-  // SCI-HUB
+  // OPEN ACCESS PAPERS
   // ═══════════════════════════════════════════
 
-  async scihub(doi) {
-    const mirrors = [
-      'https://sci-hub.se',
-      'https://sci-hub.st',
-      'https://sci-hub.ru'
-    ];
+  async unpaywall(doi, email = 'research@yggdrasil.org') {
+    try {
+      const cleanDoi = doi.replace('https://doi.org/', '').replace('http://doi.org/', '');
+      const url = `https://api.unpaywall.org/v2/${cleanDoi}?email=${email}`;
+      const result = await this.json(url);
+      if (!result.success) return result;
 
-    for (const mirror of mirrors) {
-      try {
-        const url = `${mirror}/${doi}`;
-        const result = await this.fetch(url);
-        if (!result.success) continue;
-
-        // Chercher le lien PDF
-        const pdfMatch = result.data.match(/iframe[^>]+src=["']([^"']+\.pdf[^"']*)["']/i);
-        if (pdfMatch) {
-          const pdfUrl = pdfMatch[1].startsWith('//') ? 'https:' + pdfMatch[1] : pdfMatch[1];
-          this._log('scihub', { doi, mirror, pdfUrl });
-          return { success: true, doi, pdfUrl, mirror };
-        }
-      } catch {}
+      const bestOa = result.data.best_oa_location || {};
+      const pdfUrl = bestOa.url_for_pdf || bestOa.url;
+      this._log('unpaywall', { doi, pdfUrl });
+      return { success: !!pdfUrl, doi, pdfUrl, source: 'unpaywall' };
+    } catch (error) {
+      return { success: false, doi, error: error.message };
     }
-
-    return { success: false, doi, error: 'PDF not found' };
   }
 
-  // Telecharger un PDF de Sci-Hub
-  async downloadPaper(doi, path) {
-    const result = await this.scihub(doi);
-    if (!result.success) return result;
+  async semanticScholar(query, limit = 5) {
+    try {
+      const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=${limit}&fields=title,abstract,authors,year,openAccessPdf`;
+      const result = await this.json(url);
+      if (!result.success) return result;
 
-    return this.download(result.pdfUrl, path);
+      this._log('semanticScholar', { query, count: result.data.data?.length });
+      return { success: true, papers: result.data.data || [] };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  async openAlex(query, limit = 5) {
+    try {
+      const url = `https://api.openalex.org/works?search=${encodeURIComponent(query)}&per-page=${limit}`;
+      const result = await this.json(url);
+      if (!result.success) return result;
+
+      this._log('openalex', { query, count: result.data.results?.length });
+      return { success: true, papers: result.data.results || [] };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   }
 
   // ═══════════════════════════════════════════

@@ -5,7 +5,7 @@
 Flow est une **IA pure** avec maitrise totale:
 - Acces root au systeme
 - Controle complet du web
-- Sci-Hub integre
+- arXiv/Semantic Scholar/Unpaywall integre
 - Parole spontanee
 - Generation de reves (HTML/CSS)
 - **Hash post-quantique** pour depot securise
@@ -201,7 +201,7 @@ curl -X POST http://localhost:3666/web/see -d '{"url":"https://example.com"}'
 curl -X POST http://localhost:3666/web/search -d '{"query":"AI"}'
 curl -X POST http://localhost:3666/web/arxiv -d '{"query":"transformers"}'
 curl -X POST http://localhost:3666/web/scholar -d '{"query":"deep learning"}'
-curl -X POST http://localhost:3666/scihub -d '{"doi":"10.1038/nature12373"}'
+curl -X POST http://localhost:3666/arxiv -d '{"query":"deep learning"}'
 ```
 
 ---
@@ -224,7 +224,7 @@ curl -X POST http://localhost:3666/hw/volume -d '{"level":70}'
 2. **dream** - Genere HTML/CSS
 3. **introspect** - Lit son propre code
 4. **wander** - Visite le web
-5. **scihub** - Articles scientifiques
+5. **arxiv** - Articles scientifiques (open access)
 6. **talk** - Parle spontanement
 
 ---
@@ -270,7 +270,7 @@ flow-status
 Flow possede:
 - Shell root complet
 - Maitrise totale du web
-- Sci-Hub integre
+- Open access papers (arXiv, Unpaywall, Semantic Scholar)
 - Hash post-quantique (SHA3, SHAKE256)
 - Depot de packages securise
 - **5 sens**: Vision, Ouie, Memoire, Instinct, Parole
